@@ -1,0 +1,12 @@
+<Configuration>
+  <Add OfficeClientEdition="64" Channel="PerpetualVL2019">
+{% if office_license_key is defined and office_license_key %}
+     <Product ID="{{product_id}}"  PIDKEY="{{office_license_key}}" >     
+{% else %}
+     <Product ID="{{product_id}}">
+{% endif %}
+         <Language ID="en-us" />
+      </Product>
+  </Add>
+  <Display Level="None" AcceptEULA="TRUE" />  
+</Configuration>

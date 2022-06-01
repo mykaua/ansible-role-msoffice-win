@@ -1,0 +1,56 @@
+---
+# tasks file for ansible-common-role-msoffice2019-win
+- name: Check Office 2019
+  win_shell: |
+    $RegLocations = @('HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall')
+
+    $OfficeInstalled = $False
+    foreach ($Key in (Get-ChildItem $RegLocations) ) {
+      if ($Key.GetValue('InstallLocation') -like '*Microsoft Office*') {
+        $OfficeVersionInstalled = $Key.GetValue('DisplayName')
+        $OfficeInstalled = $True
+      }
+    }
+    Write-Output "$($OfficeInstalled)"
+  register: check_office
+
+- name: Create folder for Office
+  win_file:
+    path: '{{ remote_install_path }}'
+    state: directory
+  when: check_office.stdout == "False\r\n"
+
+- name: Copy template file
+  win_template:
+    src: configuration.xml.j2
+    dest: '{{ remote_install_path }}\configuration.xml'
+  when: check_office.stdout == "False\r\n"
+
+- name: Get Office Deplyment Tool
+  win_get_url:
+    url: https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_15128-20224.exe
+    dest: '{{ remote_install_path }}\ODTSetup.exe'
+  when: check_office.stdout == "False\r\n"
+
+- name: Install Office Deployment Tool
+  win_package:
+    product_id: '{{ product_id }}'
+    path: '{{ remote_install_path }}\ODTSetup.exe'
+    arguments:
+      - /quiet
+      - /extract:C:\Scripts
+    state: present
+  when: check_office.stdout == "False\r\n"
+
+# It doesn't work :(
+#    - name: Install Office 2019
+#      win_package:
+#        path: C:\Scripts\Setup.exe
+#        arguments: '/configure:C:\Scripts\configuration.xml -Wait -PassThru'
+#       state: present
+
+- name: Install Office 2019
+  win_shell: |
+    Start-Process "C:\Scripts\Setup.exe" -ArgumentList "/configure {{ remote_install_path }}\configuration.xml" -Wait -PassThru
+  when: check_office.stdout == "False\r\n"
+

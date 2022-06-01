@@ -1,0 +1,5 @@
+---
+# defaults file for ansible-common-role-msoffice2019-win
+office_license_key:
+remote_install_path: C:\Scripts
+product_id: Standard2019Volume 
