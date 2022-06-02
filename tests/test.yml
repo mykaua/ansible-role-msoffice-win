@@ -2,4 +2,4 @@
 - hosts: localhost
   remote_user: Administrator
   roles:
-    - ansible-common-role-msoffice2019-win
+    - ansible-role-msoffice-win
